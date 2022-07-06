@@ -1,24 +1,64 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from 'react';
+import firebase from './firebase';
+import Header from './components/Layout/Header';
+import Meals from './components/Meals/Meals';
+import Cart from './components/Cart/Cart';
+import CartProvider from './store/CartProvider';
+// import Login from './components/Login/Login';
 
 function App() {
+
+  const ref = firebase.firestore().collection("developers")
+  // console.log(ref);
+
+  const [data, setData] = useState([])
+  const [loader, setLoader] = useState(true)
+
+  function getData(){
+    ref.onSnapshot((querySnapshot) => {
+      const items = []
+      querySnapshot.forEach((doc) => {
+        items.push(doc.data())
+      })
+      setData(items)
+      setLoader(false)
+    })
+  }
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  const [cartIsShown, setCartIsShown] = useState(false);
+
+  const showCartHandler = () => {
+    setCartIsShown(true);
+  };
+
+  const hideCartHandler = () => {
+    setCartIsShown(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+    {/* <div className="app">
+      {loader === false && (data.map((dev) => {
+        <div key={dev.id}>
+          <h2>{dev.name}</h2>
+          <p>{dev.skill}</p>
+        </div>
+    }))
+  }
+    </div> */}
+    {/* <Login /> */}
+    <CartProvider>
+      {cartIsShown && <Cart onClose={hideCartHandler} />}
+      <Header onShowCart={showCartHandler} />
+      <main>
+        <Meals />
+      </main>
+    </CartProvider>
+    </>
   );
 }
 
